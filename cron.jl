@@ -60,10 +60,10 @@ for branchname in readdir("branches")
 
     status_jobids = String[]
     for job in ["cpu"]
-        main_jobid = submitjob("jobs/$job.sh"; chdir="sources/$sha")
+        jobid = submitjob("jobs/$job.sh"; chdir="sources/$sha")
         status_jobid = submitjob("jobs/status.sh";
-                                 dependency="afterany:$main_jobid",
-                                 env="ALL,CI_JOB=$job,CI_JOBID=$main_jobid,CI_SHA=$sha")
+                                 dependency="afterany:$jobid",
+                                 env="ALL,CI_JOB=$job,CI_JOBID=$jobid,CI_SHA=$sha")
 
         # set status
         params = Dict("state" => "pending",
