@@ -9,5 +9,5 @@ set -euo pipefail
 
 module load julia/1.1.0 cmake/3.10.2 openmpi/3.1.2
 
-julia --project -e 'using Pkg; Pkg.instantiate()'
-julia --project -e 'println("hello world")'
+julia --color=no --project -e 'using Pkg; Pkg.instantiate()'
+julia --color=no --project -e 'println("hello world")'

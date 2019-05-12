@@ -5,7 +5,7 @@ import GitHub, Dates
 auth = GitHub.authenticate(String(read("TOKEN")))
 repo = GitHub.repo("climate-machine/CLIMA", auth=auth)
 
-context = "ci/caltech-hpc"
+context = "ci/caltech"
 
 function isjobrunning(jobid)
     String(read(`squeue --noheader --jobs=$jobid`)) != ""
@@ -31,21 +31,21 @@ for branchname in readdir("branches")
     # check if new branch
     sha = branch.commit.sha
     if sha == lastsha
-        @goto nextbranch
+        continue
     end
 
-    # check if status has recently been updated (e.g. from another branch)
-    statuses,_ = GitHub.statuses(repo, branch.commit.sha)
-    for status in statuses
-        if Dates.now(Dates.UTC) - status.updated_at > Dates.Hour(24)
-            # everything over 24 hours old
-            break
-        end
-        if startswith(status.context, context)
-            # TODO: store Slurm job number and check status
-            @goto nextbranch
-        end
-    end
+    # # check if status has recently been updated (e.g. from another branch)
+    # statuses,_ = GitHub.statuses(repo, branch.commit.sha)
+    # for status in statuses
+    #     if Dates.now(Dates.UTC) - status.updated_at > Dates.Hour(24)
+    #         # everything over 24 hours old
+    #         break
+    #     end
+    #     if startswith(status.context, context)
+    #         # TODO: store Slurm job number and check status
+    #         @goto nextbranch
+    #     end
+    # end
 
     # update branch hash on disk
     write(joinpath("branches", branchname), branch.commit.sha)
@@ -68,7 +68,7 @@ for branchname in readdir("branches")
         # set status
         params = Dict("state" => "pending",
                       "context" => "$context/$job",
-                      "description" => "HPC: job id $main_jobid")
+                      "description" => "jobid $jobid")
         status = GitHub.create_status(repo, sha;
                                       auth=auth, params=params)
 
@@ -79,5 +79,5 @@ for branchname in readdir("branches")
               dependency="afterany:$(join(status_jobids,':'))",
               env="ALL,CI_SHA=$sha")
     
-    @label nextbranch
+    # @label nextbranch
 end

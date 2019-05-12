@@ -5,7 +5,7 @@ import GitHub, Dates
 auth = GitHub.authenticate(String(read("TOKEN")))
 repo = GitHub.repo("climate-machine/CLIMA", auth=auth)
 
-context = "ci/caltech-hpc"
+context = "ci/caltech"
 
 job = ENV["CI_JOB"]
 jobid = ENV["CI_JOBID"]
@@ -19,7 +19,7 @@ outfile = "sources/$sha/slurm-$jobid.out"
 outstr = String(read(outfile))
 
 params = Dict("files" =>
-              Dict("output" => Dict("content" => outstr)),              
+              Dict("output $job" => Dict("content" => outstr)),
               "description" => "HPC CI $sha",
               "public" => "true")
 gist = GitHub.create_gist(;auth=auth, params=params)
@@ -29,8 +29,7 @@ params = Dict("state" => status == "COMPLETED" ? "success" :
                          status == "FAILED" ? "failure" :
                          "error",
               "context" => "$context/$job",
-              "description" => "HPC: job id $jobid",
-              "target_url" => string(gist.url))
+              "description" => "jobid $jobid",
+              "target_url" => string(gist.html_url))
 status = GitHub.create_status(repo, sha;
                               auth=auth, params=params)
-
