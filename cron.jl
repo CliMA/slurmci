@@ -76,13 +76,5 @@ for branchname in readdir("branches")
               dependency="afterany:$(join(status_jobids,':'))",
               export="ALL,CI_SHA=$sha")
     
-    # queue job
-        
-        read(`sbatch $(joinpath(jobs, $job))`)
-    
-    # xxx
-    
-    # if fails, set status error
-
     @label nextbranch
 end
