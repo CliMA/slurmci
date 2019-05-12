@@ -14,6 +14,9 @@ end
 function submitjob(script;kwargs...)
     cmd = `sbatch`
     for (kw,val) in kwargs
+        if kw == :env
+            kw = :export
+        end
         push!(cmd.exec, "--$kw=$val")
     end
     push!(cmd.exec, script)
@@ -60,7 +63,7 @@ for branchname in readdir("branches")
         main_jobid = submitjob("jobs/$job.sh"; chdir="sources/$sha")
         status_jobid = submitjob("jobs/status.sh";
                                  dependency="afterany:$main_jobid",
-                                 export="ALL,CI_JOB=$job,CI_JOBID=$main_jobid,CI_SHA=$sha")
+                                 env="ALL,CI_JOB=$job,CI_JOBID=$main_jobid,CI_SHA=$sha")
 
         # set status
         params = Dict("state" => "pending",
@@ -74,7 +77,7 @@ for branchname in readdir("branches")
 
     submitjob("jobs/cleanup.sh";
               dependency="afterany:$(join(status_jobids,':'))",
-              export="ALL,CI_SHA=$sha")
+              env="ALL,CI_SHA=$sha")
     
     @label nextbranch
 end
