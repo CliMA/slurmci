@@ -29,7 +29,7 @@ params = Dict("state" => status == "COMPLETED" ? "success" :
                          status == "FAILED" ? "failure" :
                          "error",
               "context" => "$context/$job",
-              "description" => "jobid $jobid",
+              "description" => "job id $jobid",
               "target_url" => string(gist.html_url))
 status = GitHub.create_status(repo, sha;
                               auth=auth, params=params)

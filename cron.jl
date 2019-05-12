@@ -68,7 +68,7 @@ for branchname in readdir("branches")
         # set status
         params = Dict("state" => "pending",
                       "context" => "$context/$job",
-                      "description" => "jobid $jobid")
+                      "description" => "job id $jobid")
         status = GitHub.create_status(repo, sha;
                                       auth=auth, params=params)
 
