@@ -37,7 +37,7 @@ for branchname in readdir("branches")
     # check if status has recently been updated (e.g. from another branch)
     statuses,_ = GitHub.statuses(repo, branch.commit.sha)
     for status in statuses
-        if Dates.now(Dates.UTC) - status.updated_at > Hour(24)
+        if Dates.now(Dates.UTC) - status.updated_at > Dates.Hour(24)
             # everything over 24 hours old
             break
         end
