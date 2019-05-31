@@ -8,5 +8,9 @@
 
 set -euo pipefail
 
+module load julia/1.1.0
+
+julia --project finalize.jl
+
 rm downloads/${CI_SHA}.tar.gz
-rm -rf sources/${CI_SHA}
+#rm -rf sources/${CI_SHA}
