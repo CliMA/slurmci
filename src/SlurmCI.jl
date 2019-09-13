@@ -1,5 +1,9 @@
 module SlurmCI
 
+const builddir = "/central/scratchio/spjbyrne/slurmci/sources"
+const downloaddir = "/central/scratchio/spjbyrne/slurmci/downloads"
+const logdir = "/central/scratchio/spjbyrne/slurmci/logs"
+
 using GitHub, Pidfile, Serialization, OrderedCollections
 
 authenticate() = GitHub.authenticate(String(read("TOKEN")))
@@ -45,12 +49,12 @@ end
 
 
 function submit_slurmci_jobs(sha)
-    basepath = joinpath("sources",sha)
+    basepath = joinpath(builddir,sha)
     
     jobdict = OrderedDict{String,SlurmJob}()
     status_jobids = String[]
 
-    slurmoutdir = ".slurmciout"
+    slurmoutdir = joinpath(logdir, sha)
     
     cd(basepath) do
         isdir(slurmoutdir) || mkdir(slurmoutdir)
@@ -59,11 +63,11 @@ function submit_slurmci_jobs(sha)
             if !isempty(deps)
                 dependency="afterany:$(join(deps,':'))"
                 submit!(job,
-                        output=".slurmciout/%j",
+                        output=joinpath(slurmoutdir,"%j"),
                         dependency=dependency)
             else
                 submit!(job,
-                        output=".slurmciout/%j")
+                        output=joinpath(slurmoutdir, "%j"))
             end
             jobdict[job.id] = job
             return [job.id]
@@ -94,11 +98,10 @@ end
 
 
 function save_jobdict(sha, jobdict)
-    serialize("sources/$sha/.slurmci/jobdict", jobdict)
+    serialize(joinpath(builddir, "$sha/.slurmci/jobdict"), jobdict)
 end
-
 function load_jobdict(sha)
-    deserialize("sources/$sha/.slurmci/jobdict")
+    deserialize(joinpath(builddir, "$sha/.slurmci/jobdict"))
 end
     
     
@@ -129,8 +132,10 @@ end
 
 
 
-function generate_summary(jobdict)
+function generate_summary(jobdict, sha)
     io = IOBuffer()
+    println(io, "Commit: [`$sha`](https://github.com/climate-machine/CLIMA/commit/$sha)")
+    println(io)
     println(io, "| command | ntasks | jobid | status | elapsed |")
     println(io, "|---------|--------|-------|--------|---------|")
     for job in values(jobdict)

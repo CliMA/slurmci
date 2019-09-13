@@ -5,10 +5,10 @@ sha = ENV["CI_SHA"]
 jobdict = SlurmCI.load_jobdict(sha)
 SlurmCI.update_status!(jobdict)
 
-files = Dict("_summary.md" => Dict("content" => SlurmCI.generate_summary(jobdict)))
+files = Dict("_summary.md" => Dict("content" => SlurmCI.generate_summary(jobdict, sha)))
 
-basepath = "sources/$sha"
-slurmoutdir = joinpath(basepath, ".slurmciout")
+basepath = joinpath(SlurmCI.builddir,sha)
+slurmoutdir = joinpath(SlurmCI.logdir,sha)
 
 for jobid in keys(jobdict)
     filename = joinpath(slurmoutdir, jobid)

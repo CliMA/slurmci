@@ -14,20 +14,22 @@ for branchname in readdir("branches")
         continue
     end
 
+    @info "new job" branchname sha
+
     # update branch hash on disk
     write(joinpath("branches", branchname), branch.commit.sha)
 
-    if !isdir("sources/$sha")
+    if !isdir(joinpath(SlurmCI.builddir, sha))
         # download and extract repository
-        isdir("downloads") || mkdir("downloads")
-        download("https://api.github.com/repos/climate-machine/CLIMA/tarball/$sha", "downloads/$sha.tar.gz")
+        isdir(SlurmCI.downloaddir) || mkdir(SlurmCI.downloaddir)
+        download("https://api.github.com/repos/climate-machine/CLIMA/tarball/$sha", joinpath(SlurmCI.downloaddir, "$sha.tar.gz"))
 
-        isdir("sources") || mkdir("sources")
-        isdir("sources/$sha") || mkdir("sources/$sha")
-        run(`tar -xz -C sources/$sha --strip-components=1 -f downloads/$sha.tar.gz`)
+        isdir(SlurmCI.builddir) || mkdir(SlurmCI.builddir)
+        isdir(joinpath(SlurmCI.builddir, "$sha")) || mkdir(joinpath(SlurmCI.builddir, "$sha"))
+        run(`tar -xz -C $(joinpath(SlurmCI.builddir,sha)) --strip-components=1 -f $(joinpath(SlurmCI.downloaddir, "$sha.tar.gz"))`)
     end
     
-    if isfile("sources/$sha/.slurmci/jobs.jl")
+    if isfile(joinpath(joinpath(SlurmCI.builddir, sha, ".slurmci/jobs.jl")))
         
         SlurmCI.submit_slurmci_jobs(sha)
         
@@ -37,7 +39,7 @@ for branchname in readdir("branches")
             "context" => SlurmCI.context))
         
     else
-        rm("downloads/$sha.tar.gz")
-        rm("sources/$sha"; recursive=true)
+        rm(joinpath(SlurmCI.downloaddir, "$sha.tar.gz"))
+        rm(joinpath(SlurmCI.builddir, sha); recursive=true)
     end
 end
