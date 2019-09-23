@@ -9,7 +9,9 @@
 set -euo pipefail
 set -x #echo on
 
-~/julia-1.1.0/bin/julia --project finalize.jl
+module load julia/1.2.0
 
-rm /central/scratchio/spjbyrne/slurmci/downloads/${CI_SHA}.tar.gz
-rm -rf /central/scratchio/spjbyrne/slurmci/sources/${CI_SHA}
+julia --project finalize.jl
+
+rm /central/scratchio/esm/slurmci/downloads/${CI_SHA}.tar.gz
+rm -rf /central/scratchio/esm/slurmci/sources/${CI_SHA}

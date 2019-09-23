@@ -1,12 +1,12 @@
 module SlurmCI
 
-const builddir = "/central/scratchio/spjbyrne/slurmci/sources"
-const downloaddir = "/central/scratchio/spjbyrne/slurmci/downloads"
-const logdir = "/central/scratchio/spjbyrne/slurmci/logs"
+const builddir = "/central/scratchio/esm/slurmci/sources"
+const downloaddir = "/central/scratchio/esm/slurmci/downloads"
+const logdir = "/central/scratchio/esm/slurmci/logs"
 
 using GitHub, Pidfile, Serialization, OrderedCollections
 
-authenticate() = GitHub.authenticate(String(read("TOKEN")))
+authenticate(auth_file) = GitHub.authenticate(chomp(String(read(auth_file))))
 
 const context = "ci/slurmci"
 
@@ -48,14 +48,14 @@ function submit!(job::SlurmJob; extrakwargs...)
 end
 
 
-function submit_slurmci_jobs(sha)
-    basepath = joinpath(builddir,sha)
-    
+function submit_slurmci_jobs(auth_file, sha, jobsjl_file)
+    basepath = joinpath(builddir, sha)
+
     jobdict = OrderedDict{String,SlurmJob}()
     status_jobids = String[]
 
     slurmoutdir = joinpath(logdir, sha)
-    
+
     cd(basepath) do
         isdir(slurmoutdir) || mkdir(slurmoutdir)
 
@@ -63,10 +63,12 @@ function submit_slurmci_jobs(sha)
             if !isempty(deps)
                 dependency="afterany:$(join(deps,':'))"
                 submit!(job,
-                        output=joinpath(slurmoutdir,"%j"),
+                        env="ALL,CI_OUTDIR=$slurmoutdir",
+                        output=joinpath(slurmoutdir, "%j"),
                         dependency=dependency)
             else
                 submit!(job,
+                        env="ALL,CI_OUTDIR=$slurmoutdir",
                         output=joinpath(slurmoutdir, "%j"))
             end
             jobdict[job.id] = job
@@ -84,16 +86,19 @@ function submit_slurmci_jobs(sha)
             end
             return newdeps
         end
-        jobset = include(joinpath(basepath,".slurmci/jobs.jl"))
+        #jobset = include(joinpath(basepath,".slurmci/jobs.jl"))
+        jobset = include(jobsjl_file)
         process_jobset!(jobset)
     end
-    
-
-    submit!(SlurmJob(`jobs/cleanup.sh`);
-            env="ALL,CI_SHA=$sha",
-            dependency="afterany:$(join(keys(jobdict),':'))")
 
     save_jobdict(sha, jobdict)
+
+    # TODO: better to poll sacct for job completion and then run finalize
+    # here; this job could and has failed. Plus this is kludgy.
+
+    submit!(SlurmJob(`jobs/cleanup.sh`);
+            env="ALL,CI_SHA=$sha,CI_TOKEN=$auth_file",
+            dependency="afterany:$(join(keys(jobdict),':'))")
 end    
 
 
@@ -103,9 +108,7 @@ end
 function load_jobdict(sha)
     deserialize(joinpath(builddir, "$sha/.slurmci/jobdict"))
 end
-    
-    
-    
+
 
 function update_status!(job::SlurmJob)
     status,elapsed = split(String(read(`sacct -j $(job.id).batch -o state,elapsed --noheader`)))
@@ -119,6 +122,7 @@ function update_status!(jobdict::OrderedDict)
     end
 end
 
+
 function summary_state(jobdict)
     failed = false
     error = false
@@ -130,8 +134,6 @@ function summary_state(jobdict)
 end
 
 
-
-
 function generate_summary(jobdict, sha)
     io = IOBuffer()
     println(io, "Commit: [`$sha`](https://github.com/climate-machine/CLIMA/commit/$sha)")
@@ -141,7 +143,7 @@ function generate_summary(jobdict, sha)
     for job in values(jobdict)
 
         options = join(["$k=$v" for (k,v) in pairs(job.options)], ", ")
-        
+
         idlink = status == "" ? job.id : "[$(job.id)](#file-out_$(job.id))"
 
         statussym =
@@ -149,7 +151,7 @@ function generate_summary(jobdict, sha)
             job.status == "COMPLETED" ? "\u2705" :
             job.status == "FAILED" ? "\u274c" :
             "\u26A0"        
-        
+
         println(io, "| $(job.cmd) | $options | $idlink | $statussym | $(job.elapsed) |")
     end
     String(take!(io))
