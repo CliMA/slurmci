@@ -6,7 +6,7 @@
 # Runs the tests in `CLIMA/slurmci-<tag>.toml` for each <branchN> for commits
 # newer than those cached in <homedir>/slurmci.cache.
 
-using GitHub, Pidfile, Serialization, OrderedCollections, Pkg.TOML
+using GitHub, Pidfile, OrderedCollections, Pkg.TOML
 
 include("src/common.jl")
 include("src/slurm_jobs.jl")
@@ -62,9 +62,9 @@ function start(args::Vector{String})
     # the file `slurmci.cache` holds state -- a dictionary mapping branch name
     # to the sha of the commit last run for that branch
     branchshas = try
-        deserialize(joinpath(homedir, "slurmci.cache"))
+        TOML.parsefile(joinpath(homedir, "cache", "$tag.toml"))
     catch e
-        OrderedDict{String,String}()
+        Dict{String,String}()
     end
 
     state_updated = false
@@ -74,12 +74,9 @@ function start(args::Vector{String})
         sha = branch.commit.sha
 
         # check if new commit
-        try
-            lastsha = branchshas[branchname]
-            if sha == lastsha
-                continue
-            end
-        catch e
+        lastsha = get(branchshas, branchname, "")
+        if sha == lastsha
+            continue
         end
 
         state_updated = true
@@ -113,7 +110,11 @@ function start(args::Vector{String})
             "context" => context))
     end
 
-    state_updated && serialize(joinpath(homedir, "slurmci.cache"), branchshas)
+    if state_updated
+        open(joinpath(homedir, "cache", "$tag.toml"), "w") do io
+            TOML.print(io, branchshas)
+        end
+    end
 end
 
 
