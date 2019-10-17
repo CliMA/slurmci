@@ -102,7 +102,8 @@ function start(args::Vector{String})
         # instead of using this cleanup job
         submit!(SlurmJob(`scripts/$(tag)-cleanup.sh`);
                 env="ALL,CI_SHA=$sha,CI_TOKEN=$auth_file",
-                dependency="afterany:$(join(keys(jobdict),':'))")
+                dependency="afterany:$(join(keys(jobdict),':'))",
+                output=joinpath(slurmoutdir, "%j"))
 
         # set status
         status = GitHub.create_status(repo, sha; auth=auth, params=Dict(
