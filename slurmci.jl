@@ -97,7 +97,7 @@ function start(args::Vector{String})
         batch_jobset!(jobdict, sha, tag, "gpu", gpu_jobs)
 
         save_jobdict(sha, jobdict)
-
+        slurmoutdir = joinpath(logdir, sha)
         # TODO poll for completion here and finalize directly
         # instead of using this cleanup job
         submit!(SlurmJob(`scripts/$(tag)-cleanup.sh`);
