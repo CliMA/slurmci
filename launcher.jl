@@ -141,7 +141,7 @@ function start(args::Vector{String})
             head_sha    = sha,
             status      = "queued"))
 
-        download_and_extract(sha)
+        download_and_extract(tag, sha)
 
         # from the slurmci-<tag>.toml file
         cpu_jobs, gpu_jobs = load_jobs(sha, tag)
