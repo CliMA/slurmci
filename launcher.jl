@@ -132,7 +132,7 @@ function start(args::Vector{String})
         end
 
         # get SHA
-        branch = GitHub.branch(repo, branchname, auth=auth)
+        branch = GitHub.branch(repo, branchname, auth=tok)
         sha = branch.commit.sha
         @info "new job" tag branchname sha
 
