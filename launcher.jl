@@ -55,63 +55,6 @@ function load_jobs(sha::String, tag::String)
 end
 
 
-function schedule_jobs(sha, tag, plat, jobs)
-    isempty(jobs) && return
-
-    srcdir = joinpath(builddir, tag, sha)
-    slurmoutdir = joinpath(logdir, tag, sha)
-    mkpath(slurmoutdir)
-
-    init_job = SlurmJob(`scripts/$(tag)-$(plat)-init.sh`)
-    submit!(init_job; env="ALL,CI_SRCDIR=$srcdir,CI_OUTDIR=$slurmoutdir",
-            output=joinpath(slurmoutdir, "%j"))
-    
-    GitHub.create_check_run(repo, auth=tok, params=GitHub.CheckRun(
-        name        = "slurm/$(tag)/$(plat)-init",
-        head_sha    = sha,
-        external_id = "$(init_job.id)",
-        status      = "queued",
-        output      = GitHub.Checks.Output(
-            title     = "Initialize $(plat)",
-            summary   = "cmd: `$(init_job.cmd)`\noptions: `$(init_job.options)`\njob id: $(init_job.id)")
-    ))
-    
-    runtests_fn = "scripts/$(tag)-$(plat)-tests.sh"
-    if isfile(runtests_fn)
-        runtests_job = SlurmJob(`$runtests_fn`)
-        submit!(runtests_job; env="ALL,CI_SRCDIR=$srcdir,CI_OUTDIR=$slurmoutdir",
-                output=joinpath(slurmoutdir, "%j"),
-                dependency="afterany:$(init_job.id)")
-        GitHub.create_check_run(repo, auth=tok, params=GitHub.CheckRun(
-            name        = "slurm/$(tag)/$(plat)-test",
-            head_sha    = sha,
-            external_id = "$(runtests_job.id)",
-            status      = "queued",
-            output      = GitHub.Checks.Output(
-                title     = "Test $(plat)",
-                summary   = "cmd: `$(runtests_job.cmd)`\noptions: `$(runtests_job.options)`\njob id: $(runtests_job.id)")
-        ))
-    end
-    
-    for job in jobs
-        submit!(job; env="ALL,CI_SRCDIR=$srcdir,CI_OUTDIR=$slurmoutdir",
-                output=joinpath(slurmoutdir, "%j"),
-                dependency="afterany:$(init_job.id)")
-
-        GitHub.create_check_run(repo, auth=tok, params=GitHub.CheckRun(
-            name        = "slurm/$(tag)/$(plat)-$(basename(job.cmd[2]))",
-            head_sha    = sha,
-            external_id = "$(job.id)",
-            status      = "queued",
-            output      = GitHub.Checks.Output(
-                title     = "Initialize $(plat)",
-                summary   = "cmd: `$(job.cmd)`\noptions: `$(job.options)`\njob id: $(job.id)")
-        ))
-
-    end
-end
-
-
 function start(args::Vector{String})
     privkey_path = args[1] # ~/privkey.pem
     tag = args[2]
@@ -142,8 +85,62 @@ function start(args::Vector{String})
 
         # from the slurmci-<tag>.toml file
         cpu_jobs, gpu_jobs = load_jobs(sha, tag)
-        schedule_jobs(sha, tag, "cpu", cpu_jobs)
-        schedule_jobs(sha, tag, "gpu", gpu_jobs)
+
+        for (tag, jobs) in ["cpu" => cpu_jobs, "gpu" => gpu_jobs]
+            isempty(jobs) && continue
+
+            srcdir = joinpath(builddir, tag, sha)
+            slurmoutdir = joinpath(logdir, tag, sha)
+            mkpath(slurmoutdir)
+
+            init_job = SlurmJob(`scripts/$(tag)-$(plat)-init.sh`)
+            submit!(init_job; env="ALL,CI_SRCDIR=$srcdir,CI_OUTDIR=$slurmoutdir",
+                    output=joinpath(slurmoutdir, "%j"))
+            
+            GitHub.create_check_run(repo, auth=tok, params=GitHub.CheckRun(
+                name        = "slurm/$(tag)/$(plat)-init",
+                head_sha    = sha,
+                external_id = "$(init_job.id)",
+                status      = "queued",
+                output      = GitHub.Checks.Output(
+                    title     = "Initialize $(plat)",
+                    summary   = "cmd: `$(init_job.cmd)`\noptions: `$(init_job.options)`\njob id: $(init_job.id)")
+            ))
+            
+            runtests_fn = "scripts/$(tag)-$(plat)-tests.sh"
+            if isfile(runtests_fn)
+                runtests_job = SlurmJob(`$runtests_fn`)
+                submit!(runtests_job; env="ALL,CI_SRCDIR=$srcdir,CI_OUTDIR=$slurmoutdir",
+                        output=joinpath(slurmoutdir, "%j"),
+                        dependency="afterany:$(init_job.id)")
+                GitHub.create_check_run(repo, auth=tok, params=GitHub.CheckRun(
+                    name        = "slurm/$(tag)/$(plat)-test",
+                    head_sha    = sha,
+                    external_id = "$(runtests_job.id)",
+                    status      = "queued",
+                    output      = GitHub.Checks.Output(
+                        title     = "Test $(plat)",
+                        summary   = "cmd: `$(runtests_job.cmd)`\noptions: `$(runtests_job.options)`\njob id: $(runtests_job.id)")
+                ))
+            end
+            
+            for job in jobs
+                submit!(job; env="ALL,CI_SRCDIR=$srcdir,CI_OUTDIR=$slurmoutdir",
+                        output=joinpath(slurmoutdir, "%j"),
+                        dependency="afterany:$(init_job.id)")
+
+                GitHub.create_check_run(repo, auth=tok, params=GitHub.CheckRun(
+                    name        = "slurm/$(tag)/$(plat)-$(basename(job.cmd[2]))",
+                    head_sha    = sha,
+                    external_id = "$(job.id)",
+                    status      = "queued",
+                    output      = GitHub.Checks.Output(
+                        title     = "Initialize $(plat)",
+                        summary   = "cmd: `$(job.cmd)`\noptions: `$(job.options)`\njob id: $(job.id)")
+                ))
+
+            end
+        end
 
         GitHub.create_check_run(repo, auth=tok, params=GitHub.CheckRun(
             name        ="slurm/$(tag)",
