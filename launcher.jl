@@ -55,7 +55,7 @@ function schedule_jobs(sha, tag, plat, jobs)
     isempty(jobs) && return
 
     srcdir = joinpath(builddir, tag, sha)
-    slurmoutdir = joinpath(logdir, sha)
+    slurmoutdir = joinpath(logdir, tag, sha)
     mkpath(slurmoutdir)
 
     init_job = SlurmJob(`scripts/$(tag)-$(plat)-init.sh`)
