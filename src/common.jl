@@ -1,4 +1,7 @@
-using GitHub
+using GitHub, MbedTLS
+
+const app_id = 44065
+const reponame = "climate-machine/CLIMA"
 
 const homedir = "/groups/esm/slurmci"
 const builddir = "/central/scratchio/esm/slurmci/sources"
