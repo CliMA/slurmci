@@ -86,7 +86,7 @@ function start(args::Vector{String})
         # from the slurmci-<tag>.toml file
         cpu_jobs, gpu_jobs = load_jobs(sha, tag)
 
-        for (tag, jobs) in ["cpu" => cpu_jobs, "gpu" => gpu_jobs]
+        for (plat, jobs) in ["cpu" => cpu_jobs, "gpu" => gpu_jobs]
             isempty(jobs) && continue
 
             srcdir = joinpath(builddir, tag, sha)
