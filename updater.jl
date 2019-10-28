@@ -13,7 +13,7 @@
 #      update summary CheckRun
 #      if all complete, cleanup
 
-using Dates, TimeZones
+include("src/common.jl")
 
 githubtime(str) = str == "Unknown" ? nothing : TimeZones.utc(ZonedDateTime(DateTime(str), localzone()))
 

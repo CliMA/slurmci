@@ -7,6 +7,8 @@
 #       - post CheckRuns
 #       - post summary CheckRun
 
+include("src/common.jl")
+include("src/slurm_jobs.jl")
 
 function download_and_extract(tag, sha::String)
     srcdir = joinpath(builddir, tag, sha)
