@@ -46,7 +46,7 @@ function start(args::Vector{String})
             if summary_run === nothing
                 continue
             end
-            job_runs = filter(run -> startswith(run.name. "clima/$tag/"), runs)
+            job_runs = filter(run -> startswith(run.name, "clima/$tag/"), runs)
 
             sha_complete = true
             sha_in_progress = false
@@ -117,3 +117,9 @@ function start(args::Vector{String})
         end
     end
 end
+
+@assert length(ARGS) >= 1 """insufficient arguments
+Usage:
+  updater.jl <auth-token-filename>\n"""
+
+start(ARGS)

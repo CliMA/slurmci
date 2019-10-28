@@ -63,7 +63,7 @@ function schedule_jobs(sha, tag, plat, jobs)
             output=joinpath(slurmoutdir, "%j"))
     
     GitHub.create_check_run(repo, auth=tok, params=GitHub.CheckRun(
-        name        ="slurm/$(tag)/$(plat)-init",
+        name        = "slurm/$(tag)/$(plat)-init",
         head_sha    = sha,
         external_id = "$(init_job.id)",
         status      = "queued",
@@ -78,26 +78,24 @@ function schedule_jobs(sha, tag, plat, jobs)
         submit!(runtests_job; env="ALL,CI_SRCDIR=$srcdir,CI_OUTDIR=$slurmoutdir",
                 output=joinpath(slurmoutdir, "%j"),
                 dependency="afterany:$(init_job.id)")
-
         GitHub.create_check_run(repo, auth=tok, params=GitHub.CheckRun(
-            name        ="slurm/$(tag)/$(plat)-test",
+            name        = "slurm/$(tag)/$(plat)-test",
             head_sha    = sha,
             external_id = "$(runtests_job.id)",
             status      = "queued",
             output      = GitHub.Checks.Output(
                 title     = "Test $(plat)",
-                summary   = "cmd: `$((runtests_job.cmd)`\noptions: `$((runtests_job.options)`\njob id: $((runtests_job.id)")
+                summary   = "cmd: `$(runtests_job.cmd)`\noptions: `$(runtests_job.options)`\njob id: $(runtests_job.id)")
         ))
-
     end
-
+    
     for job in jobs
         submit!(job; env="ALL,CI_SRCDIR=$srcdir,CI_OUTDIR=$slurmoutdir",
                 output=joinpath(slurmoutdir, "%j"),
                 dependency="afterany:$(init_job.id)")
 
         GitHub.create_check_run(repo, auth=tok, params=GitHub.CheckRun(
-            name        ="slurm/$(tag)/$(plat)-$(basename(job.cmd[2]))",
+            name        = "slurm/$(tag)/$(plat)-$(basename(job.cmd[2]))",
             head_sha    = sha,
             external_id = "$(job.id)",
             status      = "queued",
@@ -139,7 +137,7 @@ function start(args::Vector{String})
         GitHub.create_check_run(repo, auth=tok, params=GitHub.CheckRun(
             name        ="slurm/$(tag)",
             head_sha    = sha,
-            status      = "queued")
+            status      = "queued"))
 
         download_and_extract(sha)
 
@@ -150,12 +148,10 @@ function start(args::Vector{String})
     end
 end
 
-
 @assert length(ARGS) >= 3 """insufficient arguments
 Usage:
-  cron.jl <auth-token-filename> <tag> <branch1> [<branch2> ...]\n"""
+  launcher.jl <auth-token-filename> <tag> <branch1> [<branch2> ...]\n"""
 
 start(ARGS)
-
 
         
