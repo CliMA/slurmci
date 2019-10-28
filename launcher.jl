@@ -7,6 +7,8 @@
 #       - post CheckRuns
 #       - post summary CheckRun
 
+using Pkg.TOML
+
 include("src/common.jl")
 include("src/slurm_jobs.jl")
 
@@ -136,17 +138,18 @@ function start(args::Vector{String})
         sha = branch.commit.sha
         @info "new job" tag branchname sha
 
-        GitHub.create_check_run(repo, auth=tok, params=GitHub.CheckRun(
-            name        ="slurm/$(tag)",
-            head_sha    = sha,
-            status      = "queued"))
-
         download_and_extract(tag, sha)
 
         # from the slurmci-<tag>.toml file
         cpu_jobs, gpu_jobs = load_jobs(sha, tag)
         schedule_jobs(sha, tag, "cpu", cpu_jobs)
         schedule_jobs(sha, tag, "gpu", gpu_jobs)
+
+        GitHub.create_check_run(repo, auth=tok, params=GitHub.CheckRun(
+            name        ="slurm/$(tag)",
+            head_sha    = sha,
+            status      = "queued"))
+
     end
 end
 
