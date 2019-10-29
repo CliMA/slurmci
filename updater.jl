@@ -110,7 +110,7 @@ function start(args::Vector{String})
             summary_run.conclusion =
                 sha_failed    ? "failure"   :
                 sha_cancelled ? "cancelled" :
-                sha_complere  ? "success"   :
+                sha_complete  ? "success"   :
                                 nothing
 
             GitHub.update_check_run(repo, summary_run, params=summary_run, auth=tok)
