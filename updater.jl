@@ -54,6 +54,16 @@ function start(args::Vector{String})
             sha_cancelled = false
 
             for run in job_runs
+                # only query if necessary
+                if run.status == "completed"
+                    if run.conclusion == "failure"
+                        sha_failed = true
+                    elseif run.conclusion == "cancelled"
+                        sha_cancelled = true
+                    end
+                    continue
+                end
+                
                 jobid = run.external_id
                 slurm_state, slurm_start, slurm_end = split(String(readchomp(
                     `sacct --allocations --jobs=$(jobid) --format=state,start,end --noheader --parsable2`)), '|')
@@ -91,8 +101,11 @@ function start(args::Vector{String})
                     @warn "Unknown Slurm state: $(slurm_state)"
                 end
 
-                output = String(read(joinpath(slurmoutdir, jobid)))
-                run.output.text = string("```\n", output, "\n```\n")
+                outputfile = joinpath(slurmoutdir, jobid)
+                if isfile(outputfile)
+                    output = String(read(joinpath(slurmoutdir, jobid)))
+                    run.output.text = string("```\n", output, "\n```\n")
+                end
                 GitHub.update_check_run(repo, run, params=run, auth=tok)
             end
             
