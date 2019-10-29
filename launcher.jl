@@ -135,7 +135,7 @@ function start(args::Vector{String})
                     external_id = "$(job.id)",
                     status      = "queued",
                     output      = GitHub.Checks.Output(
-                        title     = "Initialize $(plat)",
+                        title     = "Run $(plat) $(basename(job.cmd[2]))",
                         summary   = "cmd: `$(job.cmd)`\noptions: `$(job.options)`\njob id: $(job.id)")
                 ))
 
@@ -145,8 +145,11 @@ function start(args::Vector{String})
         GitHub.create_check_run(repo, auth=tok, params=GitHub.CheckRun(
             name        ="slurm/$(tag)",
             head_sha    = sha,
-            status      = "queued"))
-
+            status      = "queued",
+            output      = GitHub.Checks.Output(
+                title     = "Summary",
+                summary   = "")
+        ))
     end
 end
 
