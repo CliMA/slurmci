@@ -42,11 +42,11 @@ function start(args::Vector{String})
             slurmoutdir = joinpath(logdir, tag, sha)
 
             runs, = GitHub.check_runs(repo, sha, auth=tok) # do we need to paginate?
-            summary_run = findfirst(run -> run.name == "clima/$tag", runs)
+            summary_run = findfirst(run -> run.name == "slurm/$tag", runs)
             if summary_run === nothing
                 continue
             end
-            job_runs = filter(run -> startswith(run.name, "clima/$tag/"), runs)
+            job_runs = filter(run -> startswith(run.name, "slurm/$tag/"), runs)
 
             sha_complete = true
             sha_in_progress = false
