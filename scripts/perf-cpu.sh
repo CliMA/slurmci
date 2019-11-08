@@ -15,4 +15,4 @@ export UCX_WARN_UNUSED_ENV_VARS=n
 
 module load julia/1.2.0 openmpi/4.0.1
 
-mpiexec julia --color=no --project $1
+mpiexec julia --color=no --project "$@"

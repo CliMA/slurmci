@@ -121,7 +121,7 @@ end
 
 @assert length(ARGS) >= 3 """insufficient arguments
 Usage:
-  cron.jl <auth-token-filename> <tag> <branch1> [<branch2> ...]\n"""
+  slurmci.jl <auth-token-filename> <tag> <branch1> [<branch2> ...]\n"""
 
 start(ARGS)
 

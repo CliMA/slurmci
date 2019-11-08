@@ -16,5 +16,5 @@ export OPENBLAS_NUM_THREADS=1
 module load julia/1.2.0 cuda/10.0 openmpi/4.0.1_cuda-10.0
 
 export TEST_NAME="$(basename "$1")"
-mpiexec nvprof --profile-child-processes --profile-api-trace none --normalized-time-unit us --csv --log-file %q{CI_OUTDIR}/%q{TEST_NAME}-%p.%q{OMPI_COMM_WORLD_RANK}.summary.nvplog julia --color=no --project=env/gpu $1
-mpiexec nvprof --profile-child-processes --normalized-time-unit us --metrics local_load_transactions,local_store_transactions --csv --log-file %q{CI_OUTDIR}/%q{TEST_NAME}-%p.%q{OMPI_COMM_WORLD_RANK}.metrics.nvplog julia --color=no --project=env/gpu $1
+mpiexec nvprof --profile-child-processes --profile-api-trace none --normalized-time-unit us --csv --log-file %q{CI_OUTDIR}/%q{TEST_NAME}-%p.%q{OMPI_COMM_WORLD_RANK}.summary.nvplog julia --color=no --project=env/gpu "$@"
+mpiexec nvprof --profile-child-processes --normalized-time-unit us --metrics local_load_transactions,local_store_transactions --csv --log-file %q{CI_OUTDIR}/%q{TEST_NAME}-%p.%q{OMPI_COMM_WORLD_RANK}.metrics.nvplog julia --color=no --project=env/gpu "$@"
