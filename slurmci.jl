@@ -82,33 +82,36 @@ function start(args::Vector{String})
         state_updated = true
 
         @info "new job" branchname sha
+        try
+            # record the commit hash for this branch
+            branchshas[branchname] = branch.commit.sha
 
-        # record the commit hash for this branch
-        branchshas[branchname] = branch.commit.sha
+            download_and_extract(sha)
 
-        download_and_extract(sha)
+            # from the slurmci-<tag>.toml file
+            cpu_jobs, gpu_jobs = load_jobs(sha, tag)
 
-        # from the slurmci-<tag>.toml file
-        cpu_jobs, gpu_jobs = load_jobs(sha, tag)
+            # batch all requested jobs
+            jobdict = OrderedDict{String,SlurmJob}()
+            batch_jobset!(jobdict, sha, tag, "cpu", cpu_jobs)
+            batch_jobset!(jobdict, sha, tag, "gpu", gpu_jobs)
 
-        # batch all requested jobs
-        jobdict = OrderedDict{String,SlurmJob}()
-        batch_jobset!(jobdict, sha, tag, "cpu", cpu_jobs)
-        batch_jobset!(jobdict, sha, tag, "gpu", gpu_jobs)
+            save_jobdict(sha, jobdict)
+            slurmoutdir = joinpath(logdir, sha)
+            # TODO poll for completion here and finalize directly
+            # instead of using this cleanup job
+            submit!(SlurmJob(`scripts/$(tag)-cleanup.sh`);
+                    env="ALL,CI_SHA=$sha,CI_TOKEN=$auth_file",
+                    dependency="afterany:$(join(keys(jobdict),':'))",
+                    output=joinpath(slurmoutdir, "%j"))
 
-        save_jobdict(sha, jobdict)
-        slurmoutdir = joinpath(logdir, sha)
-        # TODO poll for completion here and finalize directly
-        # instead of using this cleanup job
-        submit!(SlurmJob(`scripts/$(tag)-cleanup.sh`);
-                env="ALL,CI_SHA=$sha,CI_TOKEN=$auth_file",
-                dependency="afterany:$(join(keys(jobdict),':'))",
-                output=joinpath(slurmoutdir, "%j"))
-
-        # set status
-        status = GitHub.create_status(repo, sha; auth=auth, params=Dict(
-            "state" => "pending",
-            "context" => context))
+            # set status
+            status = GitHub.create_status(repo, sha; auth=auth, params=Dict(
+                "state" => "pending",
+                "context" => context))
+        catch e
+            @error e
+        end
     end
 
     if state_updated
