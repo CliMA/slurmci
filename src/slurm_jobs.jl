@@ -12,16 +12,13 @@ mutable struct SlurmJob
     status
     elapsed
 end
-SlurmJob(cmd::Cmd; kwargs...) = SlurmJob(cmd, kwargs, nothing, nothing, nothing)
-
+function SlurmJob(cmd::Cmd, options=String[]; kwargs...)
+    options = vcat(options, ["--$(kw == :env ? :export : kw)=$val" for (kw,val) in kwargs])
+    SlurmJob(cmd, options, nothing, nothing, nothing)
+end
 function submit!(job::SlurmJob; extrakwargs...)
     sbatchcmd = `/central/slurm/install/current/bin/sbatch`
-    for (kw,val) in pairs(job.options)
-        if kw == :env
-            kw = :export
-        end
-        push!(sbatchcmd.exec, "--$kw=$val")
-    end
+    append!(sbatchcmd.exec, job.options)
     for (kw,val) in extrakwargs
         if kw == :env
             kw = :export
@@ -99,7 +96,7 @@ function test_summary(jobdict, sha)
     println(io, "|---------|--------|-------|--------|---------|")
     for job in values(jobdict)
 
-        options = join(["$k=$v" for (k,v) in pairs(job.options)], ", ")
+        options = join(job.options, " ")
 
         idlink = status == "" ? job.id : "[$(job.id)](#file-out_$(job.id))"
 

@@ -38,7 +38,11 @@ function load_jobs(sha::String, tag::String)
         for arg in entry["args"]
             push!(cmd.exec, arg)
         end
-        return SlurmJob(cmd, ntasks=entry["n"])
+        slurmargs = get(entry,"slurmargs",String[])
+        if haskey(entry, "n")
+            push!(slurmargs, "--ntasks=$(entry["n"])")
+        end
+        return SlurmJob(cmd, slurmargs)
     end
 
     cpu_jobs = [create_test_job("scripts/$(tag)-cpu.sh", entry) for entry in cpu_tests]
