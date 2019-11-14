@@ -15,4 +15,8 @@ export OPENBLAS_NUM_THREADS=1
 
 module load julia/1.2.0 cuda/10.0 openmpi/4.0.1_cuda-10.0
 
-julia --color=no --project=env/gpu test/runtests_gpu.jl
+if [ -d "env/gpu" ]; then
+    julia --color=no --project=env/gpu test/runtests_gpu.jl
+else
+    julia --color=no --project test/runtests_gpu.jl
+fi
