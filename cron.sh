@@ -1,4 +1,8 @@
 #!/bin/bash
+if [[ "$HOSTNAME" != "login1" ]]; then
+    exit 0
+fi
+
 source /etc/bashrc
 module load julia/1.2.0
 cd "$(dirname "$0")"
