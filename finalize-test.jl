@@ -17,10 +17,11 @@ function start()
     sha = ENV["CI_SHA"]
     slurmoutdir = joinpath(logdir, sha)
 
-    jobdict = load_jobdict(sha)
+    jobdict = load_jobdict(sha, "test")
     update_status!(jobdict)
 
-    files = Dict("_summary.md" => Dict("content" => test_summary(jobdict, sha)))
+    files = Dict("_summary.md" => Dict("content" =>
+                                       test_summary(jobdict, sha)))
 
     for jobid in keys(jobdict)
         filename = joinpath(slurmoutdir, jobid)

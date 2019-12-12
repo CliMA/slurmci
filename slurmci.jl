@@ -100,7 +100,7 @@ function start(args::Vector{String})
             batch_jobset!(jobdict, sha, tag, "cpu", cpu_jobs)
             batch_jobset!(jobdict, sha, tag, "gpu", gpu_jobs)
 
-            save_jobdict(sha, jobdict)
+            save_jobdict(sha, jobdict, tag)
             slurmoutdir = joinpath(logdir, sha)
             # TODO poll for completion here and finalize directly
             # instead of using this cleanup job

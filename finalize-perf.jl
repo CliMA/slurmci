@@ -19,32 +19,33 @@ function start()
     sha = ENV["CI_SHA"]
     auth = authenticate(ENV["CI_TOKEN"])
 
-    jobdict = load_jobdict(sha)
+    jobdict = load_jobdict(sha, "perf")
     update_status!(jobdict)
 
-    # generate and upload the performance gist
+    files = Dict("_performance.md" => Dict("content" =>
+                                           perf_summary(jobdict, sha)))
+
     summaries, metrics = analyze_perf(sha)
     if !isempty(summaries)
         # store performance data in a database
         store_perf_data(summaries, metrics)
 
-        perf_files = Dict("_performance.md" => Dict("content" =>
-                                                    perf_summary(sha, summaries)))
-
-        perf_files["_diffs.md"] = Dict("content" => perf_diff())
+        files["_kernels.md"] => Dict("content" => perf_kernels(summaries))
+        files["_diffs.md"] = Dict("content" => perf_diff())
 
         for testname in keys(summaries)
-            perf_files[testname] = Dict("content" =>
-                                        gen_time_plot(sha, testname,
-                                                      summaries[testname],
-                                                      metrics[testname]))
+            files[testname] = Dict("content" =>
+                                   gen_time_plot(sha, testname,
+                                                 summaries[testname],
+                                                 metrics[testname]))
         end
-
-        params = Dict("files" => perf_files,
-                      "description" => "SlurmCI Perf $sha",
-                      "public" => "true")
-        gist = GitHub.create_gist(;auth=auth, params=params)
     end
+
+    # upload gist
+    params = Dict("files" => files,
+                  "description" => "SlurmCI Perf $sha",
+                  "public" => "true")
+    gist = GitHub.create_gist(;auth=auth, params=params)
 end
 
 start()
