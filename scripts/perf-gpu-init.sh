@@ -15,8 +15,4 @@ export OPENBLAS_NUM_THREADS=1
 
 module load julia/1.2.0 cuda/10.0 openmpi/4.0.1_cuda-10.0
 
-if [ -d "env/gpu" ]; then
-    julia --color=no --project=env/gpu -e 'using Pkg; pkg"instantiate"; pkg"build"; pkg"precompile"'
-else
-    julia --color=no --project -e 'using Pkg; pkg"instantiate"; pkg"build"; pkg"precompile"'
-fi
+julia --color=no --project -e 'using Pkg; pkg"instantiate"; pkg"build"; pkg"precompile"'
