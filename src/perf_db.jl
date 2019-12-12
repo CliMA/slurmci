@@ -47,10 +47,8 @@ function gen_time_plot(sha::String, testname::String, pdf::DataFrame, mdf::DataF
     return String(take!(iob))
 end
 
-function perf_summary(sha::String, summaries::Dict{String,DataFrame})
+function perf_kernels(summaries::Dict{String,DataFrame})
     iob = IOBuffer()
-    println(iob, "Commit: [`$sha`](https://github.com/climate-machine/CLIMA/commit/$sha)")
-    println(iob)
     println(iob, "| test | #kernels | total kernel time (us) |")
     println(iob, "|------|----------|------------------------|")
     testnames = keys(summaries)

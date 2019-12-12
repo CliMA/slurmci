@@ -60,11 +60,11 @@ function batch_jobset!(jobdict, sha, tag, plat, jobs)
     end
 end
 
-function save_jobdict(sha, jobdict)
-    serialize(joinpath(builddir, "$sha/jobdict"), jobdict)
+function save_jobdict(sha, jobdict, tag)
+    serialize(joinpath(builddir, "$sha/jobdict-$(tag)"), jobdict)
 end
-function load_jobdict(sha)
-    deserialize(joinpath(builddir, "$sha/jobdict"))
+function load_jobdict(sha, tag)
+    deserialize(joinpath(builddir, "$sha/jobdict-$(tag)"))
 end
 
 function update_status!(job::SlurmJob)
@@ -104,10 +104,30 @@ function test_summary(jobdict, sha)
             job.status == "" ? "" :
             job.status == "COMPLETED" ? "\u2705" :
             job.status == "FAILED" ? "\u274c" :
-            "\u26A0"        
+            "\u26A0"
 
         println(io, "| $(job.cmd) | $options | $idlink | $statussym | $(job.elapsed) |")
     end
     String(take!(io))
 end
 
+function perf_summary(jobdict, sha)
+    io = IOBuffer()
+    println(io, "Commit: [`$sha`](https://github.com/climate-machine/CLIMA/commit/$sha)")
+    println(io)
+    println(io, "| command | ntasks | status | elapsed |")
+    println(io, "|---------|--------|--------|---------|")
+    for job in values(jobdict)
+
+        options = join(job.options, " ")
+
+        statussym =
+            job.status == "" ? "" :
+            job.status == "COMPLETED" ? "\u2705" :
+            job.status == "FAILED" ? "\u274c" :
+            "\u26A0"        
+
+        println(io, "| $(job.cmd) | $options | $statussym | $(job.elapsed) |")
+    end
+    String(take!(io))
+end
