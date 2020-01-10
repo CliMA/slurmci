@@ -13,6 +13,7 @@ export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot/cpu"
 export OPENBLAS_NUM_THREADS=1
 export UCX_WARN_UNUSED_ENV_VARS=n
 
-module load julia/1.2.0 openmpi/4.0.1
+export PATH="$PATH:/groups/esm/common/julia-1.3"
+module load openmpi/4.0.1
 
 julia --color=no --project test/runtests.jl
