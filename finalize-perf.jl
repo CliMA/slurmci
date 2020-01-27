@@ -30,7 +30,7 @@ function start()
         # store performance data in a database
         store_perf_data(summaries, metrics)
 
-        files["_kernels.md"] => Dict("content" => perf_kernels(summaries))
+        files["_kernels.md"] = Dict("content" => perf_kernels(summaries))
         files["_diffs.md"] = Dict("content" => perf_diff())
 
         for testname in keys(summaries)
