@@ -8,7 +8,7 @@
 set -euo pipefail
 set -x #echo on
 
-module load julia/1.2.0
+export PATH="/groups/esm/common/julia-1.3:$PATH"
 
 julia --project finalize-test.jl
 

@@ -11,7 +11,8 @@ cd ${CI_SRCDIR}
 
 export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot/cpu"
 export OPENBLAS_NUM_THREADS=1
+export PATH="/groups/esm/common/julia-1.3:$PATH"
 
-module load julia/1.2.0 openmpi/4.0.1
+module load openmpi/4.0.1
 
 julia --color=no --project -e 'using Pkg; pkg"instantiate"; pkg"build"; pkg"precompile"'
