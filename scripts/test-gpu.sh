@@ -12,8 +12,8 @@ cd ${CI_SRCDIR}
 
 export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot/gpu"
 export OPENBLAS_NUM_THREADS=1
+export PATH="/groups/esm/common/julia-1.3:$PATH"
 
-export PATH="$PATH:/groups/esm/common/julia-1.3"
 module load cuda/10.0 openmpi/4.0.1_cuda-10.0
 
 mpiexec julia --color=no --project "$@"
