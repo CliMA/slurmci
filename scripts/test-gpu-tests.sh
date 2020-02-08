@@ -16,4 +16,4 @@ export PATH="/groups/esm/common/julia-1.3:$PATH"
 
 module load cuda/10.0 openmpi/4.0.1_cuda-10.0
 
-julia --color=no --project test/runtests_gpu.jl
+julia -g2 --color=no --project test/runtests_gpu.jl
