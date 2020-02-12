@@ -119,6 +119,7 @@ function perf_diff()
                 str = str * (length(avgdv) == 1 ? (@sprintf "%.3f" avgdv[1]) : " (none)") * " |"
             end
             println(iob, str)
+            println(iob)
         end
     end
 
