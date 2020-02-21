@@ -15,6 +15,6 @@ export UCX_WARN_UNUSED_ENV_VARS=n
 export CLIMA_GPU=false
 export PATH="/groups/esm/common/julia-1.3:$PATH"
 
-module load openmpi/4.0.1
+module load openmpi/4.0.1 hdf5/1.10.1 netcdf-c/4.6.1
 
 julia --color=no --project -e 'using Pkg; pkg"instantiate"; pkg"build"; pkg"precompile"'
