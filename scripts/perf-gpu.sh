@@ -12,6 +12,7 @@ cd ${CI_SRCDIR}
 
 export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot/gpu"
 export OPENBLAS_NUM_THREADS=1
+export UCX_ERROR_SIGNALS="SIGILL,SIGBUS,SIGFPE" # SIGSEGV is used by Julia
 export PATH="/groups/esm/common/julia-1.3:/usr/sbin:$PATH"
 
 module load cuda/10.0 openmpi/4.0.1_cuda-10.0
