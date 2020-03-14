@@ -13,6 +13,7 @@ cd ${CI_SRCDIR}
 export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot/cpu"
 export JULIA_NUM_THREADS=4
 export OPENBLAS_NUM_THREADS=1
+export UCX_ERROR_SIGNALS="SIGILL,SIGBUS,SIGFPE" # SIGSEGV is used by Julia
 export UCX_WARN_UNUSED_ENV_VARS=n
 export CLIMA_GPU=false
 export PATH="/groups/esm/common/julia-1.3:/usr/sbin:$PATH"
