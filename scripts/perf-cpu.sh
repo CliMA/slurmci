@@ -6,6 +6,7 @@
 
 set -euo pipefail
 set -x #echo on
+hostname
 
 cd ${CI_SRCDIR}
 
