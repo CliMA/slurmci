@@ -7,6 +7,7 @@
 
 set -euo pipefail
 set -x #echo on
+hostname
 
 export PATH="/groups/esm/common/julia-1.3:/usr/sbin:$PATH"
 
