@@ -15,7 +15,7 @@ export OPENBLAS_NUM_THREADS=1
 export UCX_ERROR_SIGNALS="SIGILL,SIGBUS,SIGFPE" # SIGSEGV is used by Julia
 export PATH="/groups/esm/common/julia-1.3:/usr/sbin:$PATH"
 
-module load cuda/10.0 openmpi/4.0.1_cuda-10.0
+module load cuda/10.0 openmpi/4.0.3_cuda-10.0
 
 export TEST_NAME="$(basename "$1")"
 mpiexec nvprof --profile-child-processes --profile-api-trace none --normalized-time-unit us --csv --log-file %q{CI_OUTDIR}/%q{TEST_NAME}-%p.%q{OMPI_COMM_WORLD_RANK}.summary.nvplog julia --color=no --project "$@"
