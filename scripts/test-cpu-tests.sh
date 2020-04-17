@@ -19,6 +19,6 @@ export UCX_WARN_UNUSED_ENV_VARS=n
 export CLIMA_GPU=false
 export PATH="/groups/esm/common/julia-1.3:/usr/sbin:$PATH"
 
-module load openmpi/4.0.3
+module load openmpi/4.0.1
 
 julia --color=no --project test/runtests.jl
