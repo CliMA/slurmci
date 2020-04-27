@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --time=0:30:00     # walltime
+#SBATCH --time=0:45:00     # walltime
 #SBATCH --nodes=1          # number of nodes
 #SBATCH --mem-per-cpu=5G   # memory per CPU core
 #SBATCH --gres=gpu:1
