@@ -36,9 +36,9 @@ function load_jobs(sha::String, tag::String)
     function create_test_job(sname, entry)
         cmd = `$(sname) $(entry["file"])`
         for arg in entry["args"]
-            push!(cmd.exec, arg)
+            append!(cmd.exec, Base.shell_split(arg))
         end
-        slurmargs = get(entry,"slurmargs",String[])
+        slurmargs = get(entry, "slurmargs", String[])
         if haskey(entry, "n")
             push!(slurmargs, "--ntasks=$(entry["n"])")
         end
