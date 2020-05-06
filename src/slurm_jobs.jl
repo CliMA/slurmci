@@ -90,7 +90,7 @@ end
 
 function test_summary(jobdict, sha)
     io = IOBuffer()
-    println(io, "Commit: [`$sha`](https://github.com/climate-machine/CLIMA/commit/$sha)")
+    println(io, "Commit: [`$sha`](https://github.com/CliMA/ClimateMachine.jl/commit/$sha)")
     println(io)
     println(io, "| command | ntasks | jobid | status | elapsed |")
     println(io, "|---------|--------|-------|--------|---------|")
@@ -113,7 +113,7 @@ end
 
 function perf_summary(jobdict, sha)
     io = IOBuffer()
-    println(io, "Commit: [`$sha`](https://github.com/climate-machine/CLIMA/commit/$sha)")
+    println(io, "Commit: [`$sha`](https://github.com/CliMA/ClimateMachine.jl/commit/$sha)")
     println(io)
     println(io, "| command | ntasks | status | elapsed |")
     println(io, "|---------|--------|--------|---------|")

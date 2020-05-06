@@ -30,7 +30,7 @@ function start()
 
     # authenticate
     auth = authenticate(ENV["CI_TOKEN"])
-    repo = GitHub.repo("climate-machine/CLIMA", auth=auth)
+    repo = GitHub.repo("CliMA/ClimateMachine.jl", auth=auth)
 
     # upload gist
     params = Dict("files" => files,
