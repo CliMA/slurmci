@@ -17,6 +17,6 @@ The basic idea is that it will watch specific branches on the repository: if the
 3. Change the paths to point to your repository in question
   - It is hardcoded to the https://github.com/CliMA/ClimateMachine.jl
 4. Set up a cron job calling `cron.jl`
-5. Create `.slurmci/jobs.jl` file in your repository
-  - See https://github.com/CliMA/ClimateMachine.jl/blob/master/.slurmci/jobs.jl for an example.
+5. Create `slurmci-<name>.toml` file in your repository
+  - See https://github.com/CliMA/ClimateMachine.jl/blob/master/slurmci-test.toml for an example.
 
