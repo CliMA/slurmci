@@ -3,7 +3,7 @@
 # Usage:
 #   slurmci.jl <auth-token-filename> <tag> <branch1> [<branch2> ...]
 #
-# Runs the tests in `CLIMA/slurmci-<tag>.toml` for each <branchN> for commits
+# Runs the tests in `ClimateMachine/slurmci-<tag>.toml` for each <branchN> for commits
 # newer than those cached in <homedir>/slurmci.cache.
 
 using GitHub, Pidfile, OrderedCollections, Pkg.TOML
@@ -15,7 +15,7 @@ function download_and_extract(sha::String)
     if !isdir(joinpath(builddir, sha))
         # download and extract repository
         isdir(downloaddir) || mkdir(downloaddir)
-        download("https://api.github.com/repos/climate-machine/CLIMA/tarball/$sha",
+        download("https://api.github.com/repos/CliMA/ClimateMachine.jl/tarball/$sha",
                  joinpath(downloaddir, "$sha.tar.gz"))
 
         isdir(builddir) || mkdir(builddir)
@@ -61,7 +61,7 @@ function start(args::Vector{String})
     branches = args[3:end]
 
     auth = authenticate(auth_file)
-    repo = GitHub.repo("climate-machine/CLIMA", auth=auth)
+    repo = GitHub.repo("CliMA/ClimateMachine.jl", auth=auth)
 
     # the file `slurmci.cache` holds state -- a dictionary mapping branch name
     # to the sha of the commit last run for that branch
