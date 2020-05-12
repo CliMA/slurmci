@@ -11,6 +11,7 @@ hostname
 cd ${CI_SRCDIR}
 
 export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot/cpu"
+export JULIA_MPI_BINARY=system
 export OPENBLAS_NUM_THREADS=1
 export UCX_ERROR_SIGNALS="SIGILL,SIGBUS,SIGFPE" # SIGSEGV is used by Julia
 export PATH="/groups/esm/common/julia-1.3:/usr/sbin:$PATH"
