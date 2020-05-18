@@ -13,14 +13,12 @@ cd ${CI_SRCDIR}
 export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot/cpu"
 export JULIA_MPI_BINARY=system
 export OPENBLAS_NUM_THREADS=1
-export UCX_ERROR_SIGNALS="SIGILL,SIGBUS,SIGFPE" # SIGSEGV is used by Julia
-export UCX_WARN_UNUSED_ENV_VARS=n
 export CLIMA_GPU=false
 export PATH="/groups/esm/common/julia-1.3:/usr/sbin:$PATH"
 
 module load openmpi/4.0.1 hdf5/1.10.1 netcdf-c/4.6.1
 
-julia --color=no --project -e 'using Pkg; pkg"instantiate"; pkg"build MPI"'
-julia --color=no --project -e 'using Pkg; pkg"precompile"'
+julia --color=no --project -e 'using Pkg; Pkg.instantiate(); Pkg.build(;verbose=true")'
+julia --color=no --project -e 'using Pkg; Pkg.precompile()'
 
 cat Manifest.toml
