@@ -4,7 +4,12 @@ if [[ "$HOSTNAME" != "login1" ]]; then
 fi
 
 source /etc/bashrc
-export PATH="/groups/esm/common/julia-1.3:$PATH"
+
+ENV_SCRIPT="$(dirname "$0")/env.sh"
+if [ -f "$ENV_SCRIPT" ]; then
+    # for setting SBATCH_ and SLURMCI_ vars
+    source "$ENV_SCRIPT"
+fi
+module load julia/1.4.1
 cd "$(dirname "$0")"
-export SBATCH_RESERVATION=clima
 julia --project slurmci.jl "$@" &>> "log/$(date +\%Y-\%m-\%d)"

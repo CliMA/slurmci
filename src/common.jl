@@ -1,11 +1,12 @@
 using GitHub
 
-const homedir = "/groups/esm/slurmci"
-const builddir = "/central/scratchio/esm/slurmci/sources"
-const downloaddir = "/central/scratchio/esm/slurmci/downloads"
-const logdir = "/central/scratchio/esm/slurmci/logs"
+const homedir = get(ENV, "SLURMCI_HOMEDIR", "/groups/esm/slurmci")
+const workdir = get(ENV, "SLURMCI_WORKDIR", "/central/scratchio/esm/slurmci")
+const builddir = joinpath(workdir, "sources")
+const downloaddir = joinpath(workdir, "downloads")
+const logdir = joinpath(workdir, "logs")
+
 const context = "ci/slurmci"
 
-#authenticate(auth_file) = GitHub.authenticate(joinpath(homedir, chomp(String(read(auth_file)))))
 authenticate(auth_file) = GitHub.authenticate(chomp(String(read(auth_file))))
 
