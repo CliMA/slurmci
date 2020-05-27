@@ -16,7 +16,6 @@ export CLIMA_GPU=false
 export CLIMATEMACHINE_OUTPUT_DIR="${CI_OUTDIR}/${SLURM_JOB_ID}_output"
 
 module purge
-export PATH="/groups/esm/common/julia-1.3:/usr/sbin:$PATH"
-module load openmpi/4.0.1 hdf5/1.10.1 netcdf-c/4.6.1
+module load julia/1.4.1 openmpi/4.0.3 hdf5/1.10.1 netcdf-c/4.6.1
 
 mpiexec julia --color=no --project "$@"

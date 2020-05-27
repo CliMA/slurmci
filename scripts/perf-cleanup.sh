@@ -9,7 +9,7 @@ set -euo pipefail
 set -x #echo on
 hostname
 
-export PATH="/groups/esm/common/julia-1.3:/usr/sbin:$PATH"
+module load julia/1.4.1
 
 julia --project finalize-perf.jl
 
