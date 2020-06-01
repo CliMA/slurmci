@@ -14,6 +14,6 @@ export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot/cpu"
 export OPENBLAS_NUM_THREADS=1
 export CLIMA_GPU=false
 
-module load openmpi/4.0.3 julia/1.4.1 hdf5/1.10.1 netcdf-c/4.6.1
+module load openmpi/4.0.3 julia/1.4.2 hdf5/1.10.1 netcdf-c/4.6.1
 
 mpiexec julia --color=no --project "$@"
