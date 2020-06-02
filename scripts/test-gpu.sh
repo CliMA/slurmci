@@ -17,6 +17,6 @@ export OPENBLAS_NUM_THREADS=1
 export CLIMATEMACHINE_OUTPUT_DIR="${CI_OUTDIR}/${SLURM_JOB_ID}_output"
 
 module purge
-module load julia/1.4.2 cuda/10.0 openmpi/4.0.3_cuda-10.0 hdf5/1.10.1 netcdf-c/4.6.1
+module load julia/1.4.1 cuda/10.0 openmpi/4.0.3_cuda-10.0 hdf5/1.10.1 netcdf-c/4.6.1
 
 mpiexec julia --color=no --project "$@"

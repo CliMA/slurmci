@@ -9,7 +9,7 @@ set -euo pipefail
 set -x #echo on
 hostname
 
-module load julia/1.4.2
+module load julia/1.4.1
 
 julia --project finalize-test.jl
 

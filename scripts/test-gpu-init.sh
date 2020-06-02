@@ -16,7 +16,7 @@ export JULIA_MPI_BINARY=system
 export OPENBLAS_NUM_THREADS=1
 
 module purge
-module load julia/1.4.2 cuda/10.0 openmpi/4.0.3_cuda-10.0 hdf5/1.10.1 netcdf-c/4.6.1
+module load julia/1.4.1 cuda/10.0 openmpi/4.0.3_cuda-10.0 hdf5/1.10.1 netcdf-c/4.6.1
 
 julia --color=no --project -e 'using Pkg; Pkg.instantiate(); Pkg.build(;verbose=true)'
 julia --color=no --project -e 'using Pkg; Pkg.precompile()'
