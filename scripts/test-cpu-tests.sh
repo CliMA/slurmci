@@ -17,6 +17,6 @@ export OPENBLAS_NUM_THREADS=1
 export CLIMA_GPU=false
 
 module purge
-module load julia/1.4.1 openmpi/4.0.3 hdf5/1.10.1 netcdf-c/4.6.1
+module load julia/1.4.2 openmpi/4.0.3 hdf5/1.10.1 netcdf-c/4.6.1
 
 #julia --color=no --project test/runtests.jl
