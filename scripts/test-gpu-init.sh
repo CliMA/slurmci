@@ -11,7 +11,7 @@ hostname
 
 cd ${CI_SRCDIR}
 
-export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot/gpu"
+export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot_gpu"
 export JULIA_MPI_BINARY=system
 export OPENBLAS_NUM_THREADS=1
 

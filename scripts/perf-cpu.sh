@@ -10,7 +10,7 @@ hostname
 
 cd ${CI_SRCDIR}
 
-export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot/cpu"
+export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot_cpu"
 export OPENBLAS_NUM_THREADS=1
 export CLIMA_GPU=false
 
