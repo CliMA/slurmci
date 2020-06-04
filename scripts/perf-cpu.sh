@@ -11,6 +11,7 @@ hostname
 cd ${CI_SRCDIR}
 
 export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot_cpu"
+export JULIA_CUDA_USE_BINARYBUILDER=false
 export OPENBLAS_NUM_THREADS=1
 export CLIMA_GPU=false
 

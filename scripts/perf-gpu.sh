@@ -12,6 +12,7 @@ hostname
 cd ${CI_SRCDIR}
 
 export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot_gpu"
+export JULIA_CUDA_USE_BINARYBUILDER=false
 export OPENBLAS_NUM_THREADS=1
 
 module load cuda/10.0 openmpi/4.0.3_cuda-10.0 julia/1.4.2 hdf5/1.10.1 netcdf-c/4.6.1
