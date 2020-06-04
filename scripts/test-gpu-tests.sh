@@ -12,6 +12,7 @@ hostname
 cd ${CI_SRCDIR}
 
 export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot_gpu"
+export JULIA_CUDA_USE_BINARYBUILDER=false
 export OPENBLAS_NUM_THREADS=1
 
 module purge
