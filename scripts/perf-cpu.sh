@@ -13,7 +13,7 @@ cd ${CI_SRCDIR}
 export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot_cpu"
 export JULIA_CUDA_USE_BINARYBUILDER=false
 export OPENBLAS_NUM_THREADS=1
-export CLIMA_GPU=false
+export CLIMATEMACHINE_SETTINGS_DISABLE_GPU=true
 
 module load openmpi/4.0.3 julia/1.4.2 hdf5/1.10.1 netcdf-c/4.6.1
 
