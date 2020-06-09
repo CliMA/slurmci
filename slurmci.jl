@@ -32,6 +32,8 @@ function load_jobs(sha::String, tag::String)
     cpu_tests = get(entries, "cpu", [])
     cpu_gpu_tests = get(entries, "cpu_gpu", [])
     gpu_tests = get(entries, "gpu", [])
+   
+    exclude = get(entries, "exclude", [])
 
     function create_test_job(sname, entry)
         cmd = `$(sname) $(entry["file"])`
@@ -42,6 +44,10 @@ function load_jobs(sha::String, tag::String)
         if haskey(entry, "n")
             push!(slurmargs, "--ntasks=$(entry["n"])")
         end
+        if !isempty(exclude)
+	    exclude_str = join(exclude, ',')
+	    push!(slurmargs, "--exclude=$exclude_str")
+	end
         return SlurmJob(cmd, slurmargs)
     end
 
