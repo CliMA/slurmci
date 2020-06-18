@@ -13,6 +13,8 @@ using GitHub
 include("src/common.jl")
 include("src/slurm_jobs.jl")
 
+const MAX_LOG_SIZE = 100_000
+
 function start()
     sha = ENV["CI_SHA"]
     slurmoutdir = joinpath(logdir, sha)
@@ -25,7 +27,7 @@ function start()
 
     for jobid in keys(jobdict)
         filename = joinpath(slurmoutdir, jobid)
-        files["out_$jobid"] = Dict("content" => String(read(filename)))
+        files["out_$jobid"] = Dict("content" => String(read(filename, MAX_LOG_SIZE)))
     end
 
     # authenticate
@@ -36,15 +38,21 @@ function start()
     params = Dict("files" => files,
                   "description" => "SlurmCI $sha",
                   "public" => "true")
-    gist = GitHub.create_gist(;auth=auth, params=params)
+    try
+        gist = GitHub.create_gist(;auth=auth, params=params)
 
-    # update status
-    params = Dict("state" => summary_state(jobdict),
-                  "context" => context,
-                  "target_url" => string(gist.html_url))
+        # update status
+        params = Dict("state" => summary_state(jobdict),
+                      "context" => context,
+                      "target_url" => string(gist.html_url))
 
+    catch
+        params = Dict("state" => "error",
+                      "context" => context)
+    end
     status = GitHub.create_status(repo, sha;
                                   auth=auth, params=params)
+
 end
 
 start()
