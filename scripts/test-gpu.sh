@@ -15,6 +15,7 @@ export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot_gpu"
 export JULIA_CUDA_USE_BINARYBUILDER=false
 export JULIA_MPI_BINARY=system
 export OPENBLAS_NUM_THREADS=1
+export CLIMATEMACHINE_SETTINGS_FIX_RNG_SEED=true
 export CLIMATEMACHINE_SETTINGS_OUTPUT_DIR="${CI_OUTDIR}/${SLURM_JOB_ID}_output"
 
 module purge
