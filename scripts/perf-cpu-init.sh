@@ -15,6 +15,10 @@ export JULIA_CUDA_USE_BINARYBUILDER=false
 export JULIA_MPI_BINARY=system
 export OPENBLAS_NUM_THREADS=1
 
+# disable download progress bars
+export CURL_HOME="$(pwd)"
+printf -- "--silent\n--show-error\n" > "$CURL_HOME/.curlrc"
+
 module load openmpi/4.0.3 julia/1.4.2 hdf5/1.10.1 netcdf-c/4.6.1
 
 julia --color=no --project -e 'using Pkg; Pkg.instantiate(); Pkg.build(;verbose=true)'
