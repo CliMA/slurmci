@@ -16,6 +16,10 @@ export JULIA_MPI_BINARY=system
 export OPENBLAS_NUM_THREADS=1
 export CLIMATEMACHINE_SETTINGS_DISABLE_GPU=true
 
+# disable download progress bars
+export CURL_HOME="$(pwd)"
+printf -- "--silent\n--show-error\n" > "$CURL_HOME/.curlrc"
+
 module purge
 module load julia/1.4.2 openmpi/4.0.3 hdf5/1.10.1 netcdf-c/4.6.1
 
