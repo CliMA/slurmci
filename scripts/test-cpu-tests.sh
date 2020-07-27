@@ -15,8 +15,13 @@ export JULIA_DEPOT_PATH="$(pwd)/.slurmdepot_cpu"
 export JULIA_CUDA_USE_BINARYBUILDER=false
 export JULIA_NUM_THREADS=4
 export OPENBLAS_NUM_THREADS=1
+
 export CLIMATEMACHINE_SETTINGS_DISABLE_GPU=true
 export CLIMATEMACHINE_SETTINGS_FIX_RNG_SEED=true
+
+# workaround for vader shared memory transport permissions errors
+# we explicitily don't include the btl transport sm module here
+export OMPI_MCA_btl="self,tcp"
 
 module purge
 module load julia/1.4.2 openmpi/4.0.3 hdf5/1.10.1 netcdf-c/4.6.1
