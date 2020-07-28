@@ -32,7 +32,7 @@ function load_jobs(sha::String, tag::String)
     cpu_tests = get(entries, "cpu", [])
     cpu_gpu_tests = get(entries, "cpu_gpu", [])
     gpu_tests = get(entries, "gpu", [])
-   
+
     exclude = get(entries, "exclude", [])
 
     function create_test_job(sname, entry)
@@ -62,72 +62,130 @@ function load_jobs(sha::String, tag::String)
 end
 
 function start(args::Vector{String})
-    auth_file = args[1]
-    tag = args[2]
-    branches = args[3:end]
+    try
+        nargs = length(args)
+        auth_file = args[1]
+        tag = args[2]
+        branches = args[3:end]
 
-    auth = authenticate(auth_file)
-    repo = GitHub.repo("CliMA/ClimateMachine.jl", auth=auth)
+        auth = authenticate(auth_file)
+        repo = GitHub.repo("CliMA/ClimateMachine.jl", auth=auth)
 
-    # the file `slurmci.cache` holds state -- a dictionary mapping branch name
-    # to the sha of the commit last run for that branch
-    branchshas = try
-        TOML.parsefile(joinpath(homedir, "cache", "$tag.toml"))
+        # the file `slurmci.cache` holds state -- a dictionary mapping branch name
+        # to the sha of the commit last run for that branch
+        cachefile = joinpath(homedir, "cache", "$tag.toml")
+        branchshas = if isfile(cachefile)
+            TOML.parsefile(cachefile)
+        else
+            Dict{String, String}()
+        end
+
+        state_updated = false
+
+        for branchname in branches
+            try
+                branch = GitHub.branch(repo, branchname, auth=auth)
+                sha = branch.commit.sha
+
+                # check if new commit
+                lastsha = get(branchshas, branchname, "")
+                if sha == lastsha
+                    continue
+                end
+
+                state_updated = true
+
+                @info "new job" repo=repo branch=branchname sha=sha
+
+                # record the commit hash for this branch
+                branchshas[branchname] = branch.commit.sha
+
+                # set status to pending
+                status = GitHub.create_status(repo, sha; auth=auth, params=Dict(
+                    "context" => context,
+                    "state" => "pending",
+                    "description" => "download source, prepare job submission"))
+
+                download_and_extract(sha)
+
+                # from the slurmci-<tag>.toml file
+                cpu_jobs, gpu_jobs = load_jobs(sha, tag)
+
+                # batch all requested jobs
+                jobdict = OrderedDict{String,SlurmJob}()
+                batch_jobset!(jobdict, sha, tag, "cpu", cpu_jobs)
+                batch_jobset!(jobdict, sha, tag, "gpu", gpu_jobs)
+
+                save_jobdict(sha, jobdict, tag)
+                slurmoutdir = joinpath(logdir, sha)
+                # TODO poll for completion here and finalize directly
+                # instead of using this cleanup job
+                submit!(SlurmJob(`scripts/$(tag)-cleanup.sh`);
+                        env="ALL,CI_SHA=$sha,CI_TOKEN=$auth_file",
+                        dependency="afterany:$(join(keys(jobdict),':'))",
+                        output=joinpath(slurmoutdir, "%j"))
+
+                # update status description on sucessful submission
+                status = GitHub.create_status(repo, sha; auth=auth, params=Dict(
+                    "context" => context,
+                    "state" => "pending",
+                    "description" => "job submitted"))
+            catch
+                # catch and save backtrace text from exception during job submission
+                errorio = IOBuffer()
+                orig_exception = true
+                for (exc, bt) in Base.catch_stack()
+                    showerror(errorio, exc, bt)
+                    if orig_exception
+                        # log original error exception for branch
+                        @error "slurm ci checkout and job submission" repo=repo branch=branchname sha=sha exception=(exc, bt)
+                        orig_exception = false
+                    end
+                end
+                # try and update github services with exception information
+                showerror_txt = String(take!(errorio))
+                status_params = Dict(
+                    "content" => context,
+                    "state" => "error",
+                    "description" => "error during job submission"
+                )
+                try
+                    # try to post error message gist
+                    gist_files = Dict(
+                        "files" => Dict("slurmci_error_$sha.txt" => Dict("content" => showerror_txt))
+                    )
+                    gist_params = Dict(
+                        "description" => "Error SlurmCI $branchname $sha",
+                        "public" => true,
+                        "files" => gist_files,
+                    )
+                    gist = GitHub.create_gist(;auth=auth, params=params)
+                    # link gist url to github status output if successful
+                    status_param["target_url"] = String(gist.html_url)
+                catch e
+                    @error "posting slurm ci submission gist" repo=repo branch=branchname sha=sha exception=e
+                end
+                # update PR / commit status on failure
+                try
+                    status = Github.create_status(repo, sha; auth=auth, params=status_params)
+                catch e
+                    @error "updating slurm ci commit status" repo=repo branch=branchname sha=sha exception=e
+                end
+            end
+        end
+
+        if state_updated
+            try
+                open(cachefile, "w") do io
+                    TOML.print(io, branchshas)
+                end
+            catch e
+                @error "when writing cache file" file=cachefile exception=(e, backtrace())
+            end
+        end
+
     catch e
-        Dict{String,String}()
-    end
-
-    state_updated = false
-
-    for branchname in branches
-        branch = GitHub.branch(repo, branchname, auth=auth)
-        sha = branch.commit.sha
-
-        # check if new commit
-        lastsha = get(branchshas, branchname, "")
-        if sha == lastsha
-            continue
-        end
-
-        state_updated = true
-
-        @info "new job" branchname sha
-        try
-            # record the commit hash for this branch
-            branchshas[branchname] = branch.commit.sha
-
-            download_and_extract(sha)
-
-            # from the slurmci-<tag>.toml file
-            cpu_jobs, gpu_jobs = load_jobs(sha, tag)
-
-            # batch all requested jobs
-            jobdict = OrderedDict{String,SlurmJob}()
-            batch_jobset!(jobdict, sha, tag, "cpu", cpu_jobs)
-            batch_jobset!(jobdict, sha, tag, "gpu", gpu_jobs)
-
-            save_jobdict(sha, jobdict, tag)
-            slurmoutdir = joinpath(logdir, sha)
-            # TODO poll for completion here and finalize directly
-            # instead of using this cleanup job
-            submit!(SlurmJob(`scripts/$(tag)-cleanup.sh`);
-                    env="ALL,CI_SHA=$sha,CI_TOKEN=$auth_file",
-                    dependency="afterany:$(join(keys(jobdict),':'))",
-                    output=joinpath(slurmoutdir, "%j"))
-
-            # set status
-            status = GitHub.create_status(repo, sha; auth=auth, params=Dict(
-                "state" => "pending",
-                "context" => context))
-        catch e
-            @error e
-        end
-    end
-
-    if state_updated
-        open(joinpath(homedir, "cache", "$tag.toml"), "w") do io
-            TOML.print(io, branchshas)
-        end
+        @error "slurm ci exception" exception=(e, backtrace())
     end
 end
 
@@ -137,4 +195,3 @@ Usage:
   slurmci.jl <auth-token-filename> <tag> <branch1> [<branch2> ...]\n"""
 
 start(ARGS)
-
