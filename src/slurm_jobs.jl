@@ -12,10 +12,12 @@ mutable struct SlurmJob
     status
     elapsed
 end
+
 function SlurmJob(cmd::Cmd, options=String[]; kwargs...)
     options = vcat(options, ["--$(kw == :env ? :export : kw)=$val" for (kw,val) in kwargs])
     SlurmJob(cmd, options, nothing, nothing, nothing)
 end
+
 function submit!(job::SlurmJob; extrakwargs...)
     sbatchcmd = `/central/slurm/install/current/bin/sbatch`
     append!(sbatchcmd.exec, job.options)
@@ -26,7 +28,7 @@ function submit!(job::SlurmJob; extrakwargs...)
         push!(sbatchcmd.exec, "--$kw=$val")
     end
     append!(sbatchcmd.exec, job.cmd)
-    _,jobid = rsplit(chomp(String(read(sbatchcmd))), limit=2)
+    _, jobid = rsplit(chomp(String(read(sbatchcmd))), limit=2)
     job.id = String(jobid)
     return job
 end
@@ -63,6 +65,7 @@ end
 function save_jobdict(sha, jobdict, tag)
     serialize(joinpath(builddir, "$sha/jobdict-$(tag)"), jobdict)
 end
+
 function load_jobdict(sha, tag)
     deserialize(joinpath(builddir, "$sha/jobdict-$(tag)"))
 end
@@ -72,6 +75,7 @@ function update_status!(job::SlurmJob)
     job.status = String(status)
     job.elapsed = String(elapsed)
 end
+
 function update_status!(jobdict::OrderedDict)
     for job in values(jobdict)
         update_status!(job)
